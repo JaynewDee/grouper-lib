@@ -1,17 +1,12 @@
-#![allow(unused_imports)]
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
+//
 ////////////////////////
 // Handles os-based i/o
 ////////////////////////
 pub mod files {
-    use crate::err_handle::Error;
     use crate::grouper;
     use crate::models::{Student, StudentBuilder};
     use csv::StringRecord;
     use serde::Deserialize;
-    use std::collections::BTreeMap;
     use std::io::Read;
     use std::net::TcpStream;
     use std::path::Path;
@@ -25,11 +20,13 @@ pub mod files {
     pub struct FileHandler {
         pub temp_path: String,
     }
+
     impl Default for FileHandler {
         fn default() -> Self {
             Self::new()
         }
     }
+
     impl FileHandler {
         pub fn new() -> FileHandler {
             FileHandler {
@@ -202,12 +199,10 @@ pub mod files {
 //////////////////
 pub mod grouper {
 
-    use crate::err_handle::{self, Error};
+    use crate::err_handle::{self};
     use crate::models::Student;
     use rand::Rng;
     use std::collections::{BTreeMap, HashMap};
-    use std::thread;
-    use tokio::sync::mpsc;
 
     // Main Handler - Balancer
 
@@ -246,9 +241,9 @@ pub mod grouper {
     impl Utils {
         //
 
-        fn rand_idx(vec_length: usize) -> usize {
+        fn rand_idx(vec_length: &usize) -> usize {
             let mut rng = rand::thread_rng();
-            rng.gen_range(0..vec_length)
+            rng.gen_range(0..*vec_length)
         }
 
         //
@@ -387,14 +382,14 @@ pub mod grouper {
             if let 0 = students.len() {
                 return groups_map;
             };
-            let rand_idx = Self::rand_idx(students.len());
+            let rand_idx = Self::rand_idx(&students.len());
             let mut current_group = current;
-            let mut random_student: Student = students[rand_idx].clone();
+            let random_student = &mut students[rand_idx];
 
             random_student.set_group(current_group);
 
             let mut new_vec = groups_map.0.get(&current_group).unwrap().clone();
-            new_vec.push(random_student);
+            new_vec.push(random_student.clone());
 
             groups_map.0.insert(current_group, new_vec.clone());
 
@@ -407,6 +402,8 @@ pub mod grouper {
             students.remove(rand_idx);
 
             Self::random_assignment(current_group, students, groups_map, num_groups)
+
+            //
         }
 
         //
