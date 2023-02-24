@@ -373,12 +373,11 @@ pub mod grouper {
 
         //
 
-        fn get_random_student(students: &mut Students, current: u16) -> (&mut Student, usize) {
+        fn get_random_student(students: &mut Students) -> (&mut Student, usize) {
             let rand_idx = Self::rand_idx(&students.len());
             let rand_student = &mut students[rand_idx];
             (rand_student, rand_idx)
         }
-
 
         pub fn random_assignment(
             current: u16,
@@ -386,10 +385,11 @@ pub mod grouper {
             mut groups_map: GroupsMap,
             num_groups: u16,
         ) -> GroupsMap {
-            if let 0 = students.len() {
+            if students.len() == 0 {
                 return groups_map;
             };
-            let (random_student, rand_idx) = Self::get_random_student(&mut students, current);
+
+            let (random_student, rand_idx) = Self::get_random_student(&mut students);
 
             let mut current_group = current;
             random_student.set_group(current_group);
@@ -424,6 +424,7 @@ pub mod grouper {
             let sorted = Self::sort_students(&students);
             let num_groups = Self::num_groups(sorted.len() as u16, group_size);
             //
+
             Self::random_assignment(1, sorted, groups_map, num_groups).0
 
             //
@@ -432,7 +433,7 @@ pub mod grouper {
         //
 
         pub fn multi_balance(
-            num_workers: u8,
+            _num_workers: u8,
             students: Vec<Student>,
             group_size: u16,
             target_sd: u8,
@@ -442,7 +443,8 @@ pub mod grouper {
             // Implement multi-threading to batch job too large for single stack.
             // - Assign the same work to all threads.
             // - Use whichever result returns first and dispense with operations on busy threads?
-            // -
+            // - Probably a bad idea ....
+
             Self::balance(students, group_size, target_sd)
 
             //
