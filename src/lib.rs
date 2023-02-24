@@ -373,6 +373,13 @@ pub mod grouper {
 
         //
 
+        fn get_random_student(students: &mut Students, current: u16) -> (&mut Student, usize) {
+            let rand_idx = Self::rand_idx(&students.len());
+            let rand_student = &mut students[rand_idx];
+            (rand_student, rand_idx)
+        }
+
+
         pub fn random_assignment(
             current: u16,
             mut students: Students,
@@ -382,18 +389,17 @@ pub mod grouper {
             if let 0 = students.len() {
                 return groups_map;
             };
-            let rand_idx = Self::rand_idx(&students.len());
-            let mut current_group = current;
-            let random_student = &mut students[rand_idx];
+            let (random_student, rand_idx) = Self::get_random_student(&mut students, current);
 
+            let mut current_group = current;
             random_student.set_group(current_group);
 
             let mut new_vec = groups_map.0.get(&current_group).unwrap().clone();
-            new_vec.push(random_student.clone());
+            new_vec.push(random_student.to_owned());
 
-            groups_map.0.insert(current_group, new_vec.clone());
+            groups_map.0.insert(current_group, new_vec);
 
-            if let true = current_group == num_groups {
+            if current_group == num_groups {
                 current_group = 1;
             } else {
                 current_group += 1;
@@ -411,7 +417,7 @@ pub mod grouper {
         fn balance(
             students: Vec<Student>,
             group_size: u16,
-            target_sd: u8,
+            _target_sd: u8,
         ) -> BTreeMap<u16, Vec<Student>> {
             //
             let groups_map = GroupsMap::new(students.len() as u16, group_size);
